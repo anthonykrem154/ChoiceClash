@@ -414,16 +414,13 @@ footer a:hover{
 
     <div class="ad">Ad Space — bottom banner</div>
 
-    <footer>
-      Post crazy questions on TikTok: “Only 12% picked this 😳”
-      <footer>
+<footer>
+  Post crazy questions on TikTok: “Only 12% picked this 😳”
+  <br><br>
   <a href="privacy.html">Privacy Policy</a> |
   <a href="terms.html">Terms of Service</a> |
   <a href="contact.html">Contact</a>
 </footer>
-    </footer>
-  </div>
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
@@ -435,17 +432,12 @@ footer a:hover{
       increment
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDGjJbMSgYsWI43HPezMUohCIsHQ2kic3c",
-      authDomain: "ezpreintthingy.firebaseapp.com",
-      databaseURL: "https://ezpreintthingy-default-rtdb.firebaseio.com",
-      projectId: "ezpreintthingy",
-      storageBucket: "ezpreintthingy.firebasestorage.app",
-      messagingSenderId: "834358576517",
-      appId: "1:834358576517:web:0b7cfefb8ea6b2917e30ec",
-      measurementId: "G-9Q57PPNPLK"
-    };
-
+const firebaseConfig = {
+  apiKey: "AIzaSyDGjJbMSgYsWI43HPezMUohCIsHQ2kic3c",
+  authDomain: "ezpreintthingy.firebaseapp.com",
+  projectId: "ezpreintthingy",
+  appId: "1:834358576517:web:0b7cfefb8ea6b2917e30ec"
+};
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
@@ -491,7 +483,6 @@ footer a:hover{
     const categoryLabel = document.getElementById("categoryLabel");
     const choiceA = document.getElementById("choiceA");
     const choiceB = document.getElementById("choiceB");
-    const totalVotes = document.getElementById("totalVotes");
     const resultsText = document.getElementById("resultsText");
     const bar = document.getElementById("bar");
     const fill = document.getElementById("fill");
