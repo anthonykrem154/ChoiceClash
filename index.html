@@ -396,6 +396,22 @@ footer a:hover{
   -webkit-background-clip:text;
   color:transparent;
 }
+.langSwitch{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-top:12px;
+}
+
+.langSwitch button{
+  border:none;
+  padding:10px 16px;
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
+  color:white;
+  cursor:pointer;
+  font-weight:bold;
+}
   </style>
 </head>
 
@@ -405,20 +421,27 @@ footer a:hover{
       <div class="logoWrap">
   <img src="favicon.png" alt="Choice Clash Logo" class="headerLogo">
   <div class="logo">Choice Clash</div>
+  <div class="langSwitch">
+  <button onclick="setLang('en')">🇺🇸 English</button>
+  <button onclick="setLang('ru')">🇷🇺 Русский</button>
 </div>
-      <p class="tagline">Pick one. See what everyone else chose.</p>
+</div>
+    <p class="tagline" id="tagline">
+  Pick one. See what everyone else chose.
+</p>
 
       <div class="stats">
         <div class="pill">📅 Daily: <span id="dailyLabel">Ready</span></div>
       </div>
     </header>
 
+    
 
     <div class="categories" id="categories"></div>
 
     <main class="card">
       <div class="small" id="categoryLabel">Loading</div>
-      <h1>Would You Rather...</h1>
+  <h1 id="mainTitle">Would You Rather...</h1>
 
       <div class="choices">
         <button class="choice a" id="choiceA"></button>
@@ -440,26 +463,25 @@ footer a:hover{
       </div>
     </main>
     <section class="card">
-  <h2>About Choice Clash</h2>
+<h2 id="aboutTitle">About Choice Clash</h2>
 
-  <p>
+<p id="about1">  
     Choice Clash created by the nickss is a free Would You Rather game where players choose between
-    two difficult, funny, and sometimes impossible choices.
-  </p>
+    two difficult, funny, and sometimes impossible choices.</p>
 
-  <p>
+  <p id="about2">
     Browse hundreds of questions across categories including Gaming, Money,
     School, Food, Life, Powers, and more.
   </p>
 
-  <p>
+  <p id="about3">
     Vote, compare answers, and discover what other players would choose.
   </p>
 </section>
 
 
 <footer>
-  Post crazy questions on TikTok: “Only 12% picked this 😳”
+ <span id="footerText">Post crazy questions on TikTok: “Only 12% picked this 😳”</span>
   <br><br>
 <a href="about.html">About</a> |
 <a href="questions.html">Questions</a> |
@@ -486,40 +508,160 @@ const firebaseConfig = {
 };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+let currentLang = localStorage.getItem("lang") || "en";
 
-    const questions = [
-      { cat: "Money", a: "Get $1 million right now", b: "Get $10 million in 10 years" },
-      { cat: "Gaming", a: "Only play Roblox forever", b: "Only play Fortnite forever" },
-      { cat: "Powers", a: "Be able to fly", b: "Be invisible" },
-      { cat: "Funny", a: "Talk like a baby forever", b: "Walk like a crab forever" },
-      { cat: "School", a: "Have no homework ever", b: "Have no tests ever" },
-      { cat: "Food", a: "Unlimited pizza forever", b: "Unlimited burgers forever" },
-      { cat: "Money", a: "Be rich but unknown", b: "Be famous but broke" },
-      { cat: "Gaming", a: "Win every game but no one knows", b: "Lose often but be famous" },
-      { cat: "Gross", a: "Eat a spoon of hot sauce", b: "Drink pickle juice" },
-      { cat: "Life", a: "Never need sleep", b: "Never need food" },
-      { cat: "Funny", a: "Always scream when you talk", b: "Always whisper when you talk" },
-      { cat: "School", a: "Be the smartest kid in school", b: "Be the most popular kid in school" },
-      { cat: "Money", a: "Win $500 every day", b: "Win $1 million once" },
-      { cat: "Powers", a: "Read minds", b: "Teleport anywhere" },
-      { cat: "Food", a: "Never eat candy again", b: "Never drink soda again" },
-      { cat: "Gaming", a: "Have every Fortnite skin", b: "Have unlimited Robux" },
-      { cat: "Life", a: "Live in New York", b: "Live in Miami" },
-      { cat: "Gross", a: "Smell bad forever", b: "Always have messy hair" },
-      { cat: "Funny", a: "Fight 100 duck-sized horses", b: "Fight 1 horse-sized duck" },
-      { cat: "Money", a: "Get paid $100 per hour to sleep", b: "Get paid $10 per step" },
-      { cat: "School", a: "Go to school 2 days a week", b: "Have summer break for 6 months" },
-      { cat: "Gaming", a: "Be a pro gamer", b: "Own a huge gaming company" },
-      { cat: "Food", a: "Only eat pizza", b: "Only eat chicken nuggets" },
-      { cat: "Life", a: "Have 1 best friend forever", b: "Have 100 normal friends" },
-      { cat: "Money", a: "Never pay for food", b: "Never pay for clothes" },
-      { cat: "Funny", a: "Have clown shoes forever", b: "Have squeaky voice forever" },
-      { cat: "Powers", a: "Pause time", b: "Rewind time" },
-      { cat: "Gaming", a: "Own a PS6 early", b: "Own the next Xbox early" },
-      { cat: "School", a: "Be teacher for a day", b: "Cancel school for a day" },
-      { cat: "Life", a: "Be 10 years older", b: "Be 5 years younger" }
-    ];
-
+ const questions = [
+  {
+    cat: { en: "Money", ru: "Деньги" },
+    a: { en: "Get $1 million right now", ru: "Получить 1 миллион долларов прямо сейчас" },
+    b: { en: "Get $10 million in 10 years", ru: "Получить 10 миллионов долларов через 10 лет" }
+  },
+  {
+    cat: { en: "Gaming", ru: "Игры" },
+    a: { en: "Only play Roblox forever", ru: "Играть только в Roblox всю жизнь" },
+    b: { en: "Only play Fortnite forever", ru: "Играть только в Fortnite всю жизнь" }
+  },
+  {
+    cat: { en: "Powers", ru: "Суперсилы" },
+    a: { en: "Be able to fly", ru: "Уметь летать" },
+    b: { en: "Be invisible", ru: "Быть невидимым" }
+  },
+  {
+    cat: { en: "Funny", ru: "Смешное" },
+    a: { en: "Talk like a baby forever", ru: "Всегда говорить как малыш" },
+    b: { en: "Walk like a crab forever", ru: "Всегда ходить как краб" }
+  },
+  {
+    cat: { en: "School", ru: "Школа" },
+    a: { en: "Have no homework ever", ru: "Никогда не делать домашку" },
+    b: { en: "Have no tests ever", ru: "Никогда не писать тесты" }
+  },
+  {
+    cat: { en: "Food", ru: "Еда" },
+    a: { en: "Unlimited pizza forever", ru: "Бесконечная пицца навсегда" },
+    b: { en: "Unlimited burgers forever", ru: "Бесконечные бургеры навсегда" }
+  },
+  {
+    cat: { en: "Money", ru: "Деньги" },
+    a: { en: "Be rich but unknown", ru: "Быть богатым, но неизвестным" },
+    b: { en: "Be famous but broke", ru: "Быть знаменитым, но бедным" }
+  },
+  {
+    cat: { en: "Gaming", ru: "Игры" },
+    a: { en: "Win every game but no one knows", ru: "Побеждать в каждой игре, но никто не знает" },
+    b: { en: "Lose often but be famous", ru: "Часто проигрывать, но быть знаменитым" }
+  },
+  {
+    cat: { en: "Gross", ru: "Жесть" },
+    a: { en: "Eat a spoon of hot sauce", ru: "Съесть ложку острого соуса" },
+    b: { en: "Drink pickle juice", ru: "Выпить рассол от огурцов" }
+  },
+  {
+    cat: { en: "Life", ru: "Жизнь" },
+    a: { en: "Never need sleep", ru: "Никогда не нуждаться во сне" },
+    b: { en: "Never need food", ru: "Никогда не нуждаться в еде" }
+  },
+  {
+    cat: { en: "Funny", ru: "Смешное" },
+    a: { en: "Always scream when you talk", ru: "Всегда кричать, когда говоришь" },
+    b: { en: "Always whisper when you talk", ru: "Всегда шептать, когда говоришь" }
+  },
+  {
+    cat: { en: "School", ru: "Школа" },
+    a: { en: "Be the smartest kid in school", ru: "Быть самым умным в школе" },
+    b: { en: "Be the most popular kid in school", ru: "Быть самым популярным в школе" }
+  },
+  {
+    cat: { en: "Money", ru: "Деньги" },
+    a: { en: "Win $500 every day", ru: "Выигрывать 500 долларов каждый день" },
+    b: { en: "Win $1 million once", ru: "Выиграть 1 миллион долларов один раз" }
+  },
+  {
+    cat: { en: "Powers", ru: "Суперсилы" },
+    a: { en: "Read minds", ru: "Читать мысли" },
+    b: { en: "Teleport anywhere", ru: "Телепортироваться куда угодно" }
+  },
+  {
+    cat: { en: "Food", ru: "Еда" },
+    a: { en: "Never eat candy again", ru: "Никогда больше не есть конфеты" },
+    b: { en: "Never drink soda again", ru: "Никогда больше не пить газировку" }
+  },
+  {
+    cat: { en: "Gaming", ru: "Игры" },
+    a: { en: "Have every Fortnite skin", ru: "Иметь все скины в Fortnite" },
+    b: { en: "Have unlimited Robux", ru: "Иметь бесконечные Robux" }
+  },
+  {
+    cat: { en: "Life", ru: "Жизнь" },
+    a: { en: "Live in New York", ru: "Жить в Нью-Йорке" },
+    b: { en: "Live in Miami", ru: "Жить в Майами" }
+  },
+  {
+    cat: { en: "Gross", ru: "Жесть" },
+    a: { en: "Smell bad forever", ru: "Плохо пахнуть навсегда" },
+    b: { en: "Always have messy hair", ru: "Всегда иметь растрёпанные волосы" }
+  },
+  {
+    cat: { en: "Funny", ru: "Смешное" },
+    a: { en: "Fight 100 duck-sized horses", ru: "Сразиться со 100 лошадьми размером с утку" },
+    b: { en: "Fight 1 horse-sized duck", ru: "Сразиться с 1 уткой размером с лошадь" }
+  },
+  {
+    cat: { en: "Money", ru: "Деньги" },
+    a: { en: "Get paid $100 per hour to sleep", ru: "Получать 100 долларов в час за сон" },
+    b: { en: "Get paid $10 per step", ru: "Получать 10 долларов за каждый шаг" }
+  },
+  {
+    cat: { en: "School", ru: "Школа" },
+    a: { en: "Go to school 2 days a week", ru: "Ходить в школу 2 дня в неделю" },
+    b: { en: "Have summer break for 6 months", ru: "Иметь летние каникулы 6 месяцев" }
+  },
+  {
+    cat: { en: "Gaming", ru: "Игры" },
+    a: { en: "Be a pro gamer", ru: "Быть профессиональным игроком" },
+    b: { en: "Own a huge gaming company", ru: "Владеть огромной игровой компанией" }
+  },
+  {
+    cat: { en: "Food", ru: "Еда" },
+    a: { en: "Only eat pizza", ru: "Есть только пиццу" },
+    b: { en: "Only eat chicken nuggets", ru: "Есть только куриные наггетсы" }
+  },
+  {
+    cat: { en: "Life", ru: "Жизнь" },
+    a: { en: "Have 1 best friend forever", ru: "Иметь одного лучшего друга навсегда" },
+    b: { en: "Have 100 normal friends", ru: "Иметь 100 обычных друзей" }
+  },
+  {
+    cat: { en: "Money", ru: "Деньги" },
+    a: { en: "Never pay for food", ru: "Никогда не платить за еду" },
+    b: { en: "Never pay for clothes", ru: "Никогда не платить за одежду" }
+  },
+  {
+    cat: { en: "Funny", ru: "Смешное" },
+    a: { en: "Have clown shoes forever", ru: "Всегда носить клоунские ботинки" },
+    b: { en: "Have squeaky voice forever", ru: "Всегда иметь писклявый голос" }
+  },
+  {
+    cat: { en: "Powers", ru: "Суперсилы" },
+    a: { en: "Pause time", ru: "Останавливать время" },
+    b: { en: "Rewind time", ru: "Перематывать время назад" }
+  },
+  {
+    cat: { en: "Gaming", ru: "Игры" },
+    a: { en: "Own a PS6 early", ru: "Получить PS6 раньше всех" },
+    b: { en: "Own the next Xbox early", ru: "Получить следующий Xbox раньше всех" }
+  },
+  {
+    cat: { en: "School", ru: "Школа" },
+    a: { en: "Be teacher for a day", ru: "Стать учителем на один день" },
+    b: { en: "Cancel school for a day", ru: "Отменить школу на один день" }
+  },
+  {
+    cat: { en: "Life", ru: "Жизнь" },
+    a: { en: "Be 10 years older", ru: "Быть на 10 лет старше" },
+    b: { en: "Be 5 years younger", ru: "Быть на 5 лет младше" }
+  }
+];
     let filtered = [...questions];
     let current = null;
     let voted = false;
@@ -539,12 +681,12 @@ const firebaseConfig = {
     const controBtn = document.getElementById("controBtn");
     const shareBtn = document.getElementById("shareBtn");
 
-    function questionId(q) {
-      return (q.cat + "-" + q.a + "-" + q.b)
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-    }
+function questionId(q) {
+  return (q.cat.en + "-" + q.a.en + "-" + q.b.en)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
     function setBusy(state) {
       busy = state;
@@ -564,13 +706,13 @@ const firebaseConfig = {
         const votesA = Math.floor(Math.random() * 500) + 50;
         const votesB = Math.floor(Math.random() * 500) + 50;
 
-        await setDoc(ref, {
-          votesA,
-          votesB,
-          optionA: q.a,
-          optionB: q.b,
-          category: q.cat
-        });
+await setDoc(ref, {
+  votesA,
+  votesB,
+  optionA: q.a.en,
+  optionB: q.b.en,
+  category: q.cat.en
+});
 
         return { ref, a: votesA, b: votesB };
       }
@@ -590,13 +732,17 @@ function renderResults(q, votes) {
   const percentB = 100 - percentA;
 
   resultsText.innerHTML = `
-    <b>${percentA}%</b> chose "${q.a}"<br>
-    <b>${percentB}%</b> chose "${q.b}"
+    <b>${percentA}%</b> ${currentLang === "ru" ? "выбрали" : "chose"} "${text(q.a)}"<br>
+    <b>${percentB}%</b> ${currentLang === "ru" ? "выбрали" : "chose"} "${text(q.b)}"
   `;
 
   resultsText.style.display = "block";
   bar.style.display = "block";
   fill.style.width = percentA + "%";
+}
+function text(value) {
+  if (typeof value === "string") return value;
+  return value[currentLang] || value.en;
 }
     async function showQuestion(q) {
       if (busy) return;
@@ -605,10 +751,9 @@ function renderResults(q, votes) {
       voted = false;
       current = q;
 
-      categoryLabel.textContent = q.cat;
-      choiceA.textContent = q.a;
-      choiceB.textContent = q.b;
-
+categoryLabel.textContent = text(q.cat);
+choiceA.textContent = text(q.a);
+choiceB.textContent = text(q.b);
       resultsText.style.display = "none";
       bar.style.display = "none";
       fill.style.width = "0%";
@@ -708,10 +853,79 @@ function renderResults(q, votes) {
       await showQuestion(bestQ);
     }
 
+
+function setLang(lang){
+currentLang = lang;
+loadCategories();
+if (current) {
+categoryLabel.textContent = text(current.cat);
+choiceA.textContent = text(current.a);
+choiceB.textContent = text(current.b);
+}
+
+  localStorage.setItem("lang", lang);
+
+  document.getElementById("tagline").textContent =
+    translations[lang].tagline;
+
+  document.getElementById("mainTitle").textContent =
+    translations[lang].title;
+
+  document.getElementById("nextBtn").textContent =
+    translations[lang].next;
+
+  document.getElementById("dailyBtn").textContent =
+    translations[lang].daily;
+
+  document.getElementById("controBtn").textContent =
+    translations[lang].controversial;
+
+  document.getElementById("shareBtn").textContent =
+    translations[lang].share;
+    document.getElementById("aboutTitle").textContent = translations[lang].aboutTitle;
+document.getElementById("about1").textContent = translations[lang].about1;
+document.getElementById("about2").textContent = translations[lang].about2;
+document.getElementById("about3").textContent = translations[lang].about3;
+document.getElementById("footerText").textContent = translations[lang].footerText;
+}
+
+const translations = {
+  en: {
+    title: "Would You Rather...",
+    next: "Next Question ➜",
+    daily: "Daily Question",
+    controversial: "Controversial",
+    share: "Share",
+    tagline: "Pick one. See what everyone else chose.",
+    aboutTitle: "About Choice Clash",
+about1: "Choice Clash created by the nickss is a free Would You Rather game where players choose between two difficult, funny, and sometimes impossible choices.",
+about2: "Browse hundreds of questions across categories including Gaming, Money, School, Food, Life, Powers, and more.",
+about3: "Vote, compare answers, and discover what other players would choose.",
+footerText: "Post crazy questions on TikTok: “Only 12% picked this 😳”"
+    
+  },
+
+  ru: {
+    title: "Что бы ты выбрал?",
+    next: "Следующий вопрос ➜",
+    daily: "Вопрос дня",
+    controversial: "Спорный",
+    share: "Поделиться",
+    tagline: "Выбери вариант и узнай мнение других.",
+    aboutTitle: "О Choice Clash",
+about1: "Choice Clash, созданный the nickss, — это бесплатная игра «Что бы ты выбрал?», где игроки выбирают между двумя сложными, смешными и иногда невозможными вариантами.",
+about2: "Играйте в сотни вопросов по категориям: Игры, Деньги, Школа, Еда, Жизнь, Суперсилы и многое другое.",
+about3: "Голосуйте, сравнивайте ответы и узнавайте, что выбрали другие игроки.",
+footerText: "Публикуй безумные вопросы в TikTok: «Только 12% выбрали это 😳»"
+  }
+  
+};
+
+
     function shareQuestion() {
       if (!current) return;
 
-      const text = `Would you rather: ${current.a} OR ${current.b}? 🔥 Play Choice Clash`;
+     const shareText = `Would you rather: ${text(current.a)} OR ${text(current.b)}? 🔥 Play Choice Clash`;
 
       if (navigator.share) {
         navigator.share({ title: "Choice Clash", text });
@@ -721,29 +935,39 @@ function renderResults(q, votes) {
       }
     }
 
-    function loadCategories() {
-      const cats = ["All", ...new Set(questions.map(q => q.cat))];
+function loadCategories() {
+  const cats = ["All"];
 
-      categoryBox.innerHTML = "";
+  questions.forEach(q => {
+    const catName = text(q.cat);
+    if (!cats.includes(catName)) cats.push(catName);
+  });
 
-      cats.forEach((cat, index) => {
-        const btn = document.createElement("button");
-        btn.className = "cat" + (index === 0 ? " active" : "");
-        btn.textContent = cat;
+  categoryBox.innerHTML = "";
 
-        btn.addEventListener("click", async () => {
-          if (busy) return;
+  cats.forEach((cat, index) => {
+    const btn = document.createElement("button");
+    btn.className = "cat" + (index === 0 ? " active" : "");
+    btn.textContent = cat;
 
-          document.querySelectorAll(".cat").forEach(c => c.classList.remove("active"));
-          btn.classList.add("active");
+    btn.addEventListener("click", async () => {
+      if (busy) return;
 
-          filtered = cat === "All" ? [...questions] : questions.filter(q => q.cat === cat);
-          await nextQuestion();
-        });
+      document.querySelectorAll(".cat").forEach(c => c.classList.remove("active"));
+      btn.classList.add("active");
 
-        categoryBox.appendChild(btn);
-      });
-    }
+      if (cat === "All") {
+        filtered = [...questions];
+      } else {
+        filtered = questions.filter(q => text(q.cat) === cat);
+      }
+
+      await nextQuestion();
+    });
+
+    categoryBox.appendChild(btn);
+  });
+}
 
     choiceA.addEventListener("click", () => vote("A"));
     choiceB.addEventListener("click", () => vote("B"));
@@ -752,8 +976,14 @@ function renderResults(q, votes) {
     controBtn.addEventListener("click", controversialQuestion);
     shareBtn.addEventListener("click", shareQuestion);
 
+
+    
     loadCategories();
     nextQuestion();
+    window.setLang = setLang;
+
+const savedLang = localStorage.getItem("lang") || "en";
+setLang(savedLang);
   </script>
 </body>
 </html>
