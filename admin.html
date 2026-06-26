@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Choice Clash</title>
+<link rel="icon" href="favicon.png">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#020617;
+  color:white;
+  padding:20px;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+}
+
+.card{
+  background:rgba(15,23,42,.95);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:20px;
+  padding:20px;
+  margin-bottom:15px;
+}
+
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+  margin-right:8px;
+  margin-top:8px;
+}
+
+.approve{background:#22c55e;color:white;}
+.delete{background:#ef4444;color:white;}
+.edit{background:#3b82f6;color:white;}
+
+input, select{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  border-radius:8px;
+  border:none;
+  font-size:16px;
+}
+
+a{
+  color:#f97316;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>Choice Clash Admin</h1>
+  <p>Pending submitted questions.</p>
+  <div id="list">Loading...</div>
+  <a href="index.html">← Back to Game</a>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const password = prompt("Admin password:");
+
+if(password !== "anthony11235"){
+  document.body.innerHTML = "<h1>Access denied</h1>";
+  throw new Error("Wrong password");
+}
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDGjJbMSgYsWI43HPezMUohCIsHQ2kic3c",
+  authDomain: "ezpreintthingy.firebaseapp.com",
+  projectId: "ezpreintthingy",
+  appId: "1:834358576517:web:0b7cfefb8ea6b2917e30ec"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const list = document.getElementById("list");
+
+function capitalizeFirst(text){
+  text = text.trim();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+async function loadSubmissions(){
+  const snap = await getDocs(collection(db, "submissions"));
+  list.innerHTML = "";
+
+  if(snap.empty){
+    list.innerHTML = "<p>No pending questions.</p>";
+    return;
+  }
+
+  snap.forEach(docSnap => {
+    const q = docSnap.data();
+
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <h3>Category</h3>
+
+      <select class="editCategory">
+        <option ${q.category === "Money" ? "selected" : ""}>Money</option>
+        <option ${q.category === "Gaming" ? "selected" : ""}>Gaming</option>
+        <option ${q.category === "Powers" ? "selected" : ""}>Powers</option>
+        <option ${q.category === "Funny" ? "selected" : ""}>Funny</option>
+        <option ${q.category === "School" ? "selected" : ""}>School</option>
+        <option ${q.category === "Food" ? "selected" : ""}>Food</option>
+        <option ${q.category === "Gross" ? "selected" : ""}>Gross</option>
+        <option ${q.category === "Life" ? "selected" : ""}>Life</option>
+      </select>
+
+      <p>
+        <b>Option A</b><br>
+        <input class="editA" value="${q.optionA || ""}">
+      </p>
+
+      <p>
+        <b>Option B</b><br>
+        <input class="editB" value="${q.optionB || ""}">
+      </p>
+
+      <button class="edit">Save Changes</button>
+      <button class="approve">Approve</button>
+      <button class="delete">Delete</button>
+    `;
+
+    div.querySelector(".edit").onclick = async () => {
+      const category = div.querySelector(".editCategory").value;
+      const optionA = capitalizeFirst(div.querySelector(".editA").value);
+      const optionB = capitalizeFirst(div.querySelector(".editB").value);
+
+      await updateDoc(doc(db, "submissions", docSnap.id), {
+        category,
+        optionA,
+        optionB
+      });
+
+      alert("Question updated!");
+    };
+
+    div.querySelector(".approve").onclick = async () => {
+      const category = div.querySelector(".editCategory").value;
+      const optionA = capitalizeFirst(div.querySelector(".editA").value);
+      const optionB = capitalizeFirst(div.querySelector(".editB").value);
+
+      await addDoc(collection(db, "approvedQuestions"), {
+        category,
+        optionA,
+        optionB
+      });
+
+      await deleteDoc(doc(db, "submissions", docSnap.id));
+      alert("Approved!");
+      loadSubmissions();
+    };
+
+    div.querySelector(".delete").onclick = async () => {
+      await deleteDoc(doc(db, "submissions", docSnap.id));
+      alert("Deleted!");
+      loadSubmissions();
+    };
+
+    list.appendChild(div);
+  });
+}
+
+loadSubmissions();
+</script>
+</body>
+</html>

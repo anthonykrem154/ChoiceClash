@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Make Your Own Question - Choice Clash</title>
+<link rel="icon" href="favicon.png">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:radial-gradient(circle at top,#312e81,#020617 65%);
+  color:white;
+  min-height:100vh;
+  padding:20px;
+}
+.container{max-width:750px;margin:auto;}
+.card{
+  background:rgba(15,23,42,.92);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:28px;
+  padding:30px;
+  text-align:center;
+}
+.logo{
+  font-size:38px;
+  font-weight:900;
+  background:linear-gradient(90deg,#f97316,#ec4899,#8b5cf6);
+  -webkit-background-clip:text;
+  color:transparent;
+  margin-bottom:20px;
+}
+input,select,textarea{
+  width:100%;
+  padding:14px;
+  margin:10px 0;
+  border-radius:14px;
+  border:none;
+  font-size:16px;
+}
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:#f97316;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+}
+a{color:#f97316;text-decoration:none;font-weight:bold;}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div class="logo">Choice Clash</div>
+
+  <div class="card">
+    <h1>Make Your Own Question</h1>
+    <p>Submit a Would You Rather question. If approved, it may appear in the game.</p>
+
+    <select id="category">
+      <option value="Money">Money</option>
+      <option value="Gaming">Gaming</option>
+      <option value="Powers">Powers</option>
+      <option value="Funny">Funny</option>
+      <option value="School">School</option>
+      <option value="Food">Food</option>
+      <option value="Gross">Gross</option>
+      <option value="Life">Life</option>
+    </select>
+
+    <input id="optionA" placeholder="Question 1 / Option A">
+    <input id="optionB" placeholder="Question 2 / Option B">
+
+    <button onclick="submitQuestion()">Submit Question</button>
+
+    <br><br>
+    <a href="index.html">← Back to Game</a>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDGjJbMSgYsWI43HPezMUohCIsHQ2kic3c",
+  authDomain: "ezpreintthingy.firebaseapp.com",
+  projectId: "ezpreintthingy",
+  appId: "1:834358576517:web:0b7cfefb8ea6b2917e30ec"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+function capitalizeFirst(text){
+  text = text.trim();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+window.submitQuestion = async function(){
+  const category = document.getElementById("category").value;
+  const optionA = capitalizeFirst(document.getElementById("optionA").value);
+  const optionB = capitalizeFirst(document.getElementById("optionB").value);
+
+  if(!optionA || !optionB){
+    alert("Fill out both question options.");
+    return;
+  }
+
+  await addDoc(collection(db, "submissions"), {
+    category,
+    optionA,
+    optionB,
+    status: "pending",
+    createdAt: serverTimestamp()
+  });
+
+  alert("Question submitted for approval!");
+  document.getElementById("optionA").value = "";
+  document.getElementById("optionB").value = "";
+};
+</script>
+</body>
+</html>
