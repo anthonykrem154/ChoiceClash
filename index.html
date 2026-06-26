@@ -412,6 +412,10 @@ footer a:hover{
   cursor:pointer;
   font-weight:bold;
 }
+.makeBtn{
+  color:white;
+  text-decoration:underline ;
+}
   </style>
 </head>
 
@@ -430,9 +434,10 @@ footer a:hover{
   Pick one. See what everyone else chose.
 </p>
 
-      <div class="stats">
-        <div class="pill">📅 Daily: <span id="dailyLabel">Ready</span></div>
-      </div>
+<div class="stats">
+  <div class="pill">📅 Daily: <span id="dailyLabel">Ready</span></div>
+  <a class="pill makeBtn" href="submit.html">Make Your Own Question</a>
+</div>
     </header>
 
     
@@ -491,14 +496,16 @@ footer a:hover{
 </footer>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc,
-      setDoc,
-      updateDoc,
-      increment
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  increment,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDGjJbMSgYsWI43HPezMUohCIsHQ2kic3c",
@@ -859,6 +866,22 @@ choiceB.textContent = text(q.b);
     }
 
 
+async function loadApprovedQuestions() {
+  const snap = await getDocs(collection(db, "approvedQuestions"));
+
+  snap.forEach(docSnap => {
+    const q = docSnap.data();
+
+    questions.push({
+      cat: { en: q.category, ru: q.category },
+      a: { en: q.optionA, ru: q.optionA },
+      b: { en: q.optionB, ru: q.optionB }
+    });
+  });
+
+  filtered = [...questions];
+}
+
 function setLang(lang){
 currentLang = lang;
 loadCategories();
@@ -974,6 +997,26 @@ function loadCategories() {
   });
 }
 
+let ctrlPresses = 0;
+let ctrlTimer = null;
+
+document.addEventListener("keydown", function(e){
+  if(e.key === "Control"){
+    ctrlPresses++;
+
+    clearTimeout(ctrlTimer);
+    ctrlTimer = setTimeout(() => {
+      ctrlPresses = 0;
+    }, 1200);
+
+    if(ctrlPresses >= 6){
+      ctrlPresses = 0;
+      window.location.href = "admin.html";
+    }
+  }
+});
+
+
     choiceA.addEventListener("click", () => vote("A"));
     choiceB.addEventListener("click", () => vote("B"));
     nextBtn.addEventListener("click", nextQuestion);
@@ -982,7 +1025,7 @@ function loadCategories() {
     shareBtn.addEventListener("click", shareQuestion);
 
 
-    
+    await loadApprovedQuestions();
     loadCategories();
     nextQuestion();
     window.setLang = setLang;
